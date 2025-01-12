@@ -1,0 +1,52 @@
+services:
+  db:
+    # The database service using the official PostgreSQL image
+    image: postgres:latest
+    environment:
+      # Sets the PostgreSQL username
+      POSTGRES_USER: your_username
+      # Sets the PostgreSQL password
+      POSTGRES_PASSWORD: your_password
+      # Sets the name of the PostgreSQL database to be created
+      POSTGRES_DB: your_database
+    volumes:
+      # Mounts a named volume to persist database data
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Maps the PostgreSQL port 5432 inside the container to port 5432 on the host
+      - "5432:5432"
+
+  backend:
+    # The backend service built from a custom Dockerfile
+    build:
+      # Specifies the context directory for the Docker build
+      context: ./assignment/backend
+      # Specifies the Dockerfile to use for the build
+      dockerfile: backend.Dockerfile
+    environment:
+      # Sets the database connection string for the backend service
+      DATABASE_URL: postgres://your_username:your_password@db:5432/your_database
+    depends_on:
+      # Ensures the database service starts before the backend
+      - db
+    ports:
+      # Maps the backend service's port 8000 inside the container to port 8000 on the host
+      - "8000:8000"
+
+  frontend:
+    # The frontend service built from a custom Dockerfile
+    build:
+      # Specifies the context directory for the Docker build
+      context: ./assignment/frontend
+      # Specifies the Dockerfile to use for the build
+      dockerfile: frontend.Dockerfile
+    ports:
+      # Maps the frontend service's port 3000 inside the container to port 3000 on the host
+      - "3000:3000"
+    depends_on:
+      # Ensures the backend service starts before the frontend
+      - backend
+
+volumes:
+  # Defines a named volume for persisting PostgreSQL data
+  postgres_data:
